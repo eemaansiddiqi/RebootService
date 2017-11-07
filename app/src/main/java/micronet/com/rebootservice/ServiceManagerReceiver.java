@@ -4,7 +4,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
-import android.widget.Toast;
 
 import static android.content.ContentValues.TAG;
 import static java.lang.Thread.sleep;
@@ -43,7 +42,7 @@ public class ServiceManagerReceiver extends BroadcastReceiver {
             }
             Intent service = new Intent(context,RebootTrackerService.class);
             context.startService(service);
-            Log.d(TAG, "Service Started by User");     }
+            Log.d(TAG, "Service Resumed by User");     }
     }
 }
 
