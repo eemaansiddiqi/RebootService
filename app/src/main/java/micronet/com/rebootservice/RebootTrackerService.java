@@ -7,6 +7,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.os.Process;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.widget.Toast;
@@ -95,14 +96,14 @@ public class RebootTrackerService extends Service {
             {
                 shutDownTime = 0;
             }
-            Log.d(TAG, "Shut Down Time" + shutDownTime);
+            Log.d(TAG, "Shut Down Time: " + shutDownTime);
             try {
                 if (shutDownTime!=0){
-                    Log.d(TAG,"Sleep for shut down time" +shutDownTime);
+                    Log.d(TAG,"Sleep for " +shutDownTime +" Seconds");
                     sleep(shutDownTime*1000);
                     increaseRestartCount();
-                    Log.d(TAG, "shutting down after incrementing, incremented value "+restartCount);
-                    Process proc = Runtime.getRuntime().exec(new String[]{"setprop", "sys.powerctl", "shutdown"});
+                    Log.d(TAG, "Shutting down, restartCount = value "+restartCount);
+                    java.lang.Process proc = Runtime.getRuntime().exec(new String[]{"setprop", "sys.powerctl", "shutdown"});
                 }
             }
             catch (Exception e) {
@@ -115,7 +116,8 @@ public class RebootTrackerService extends Service {
     public void onDestroy() {
         super.onDestroy();
         Log.e(TAG,"STOP");
-        restartHandler.removeCallbacks(Reboot_Counter);
+        Process.killProcess(Process.myPid());
+        // restartHandler.removeCallbacks(Reboot_Counter);
         Toast.makeText(this,"Service Stopped",Toast.LENGTH_LONG).show();
     }
     @Override
