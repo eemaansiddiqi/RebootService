@@ -129,7 +129,7 @@ public class RebootTrackerService extends Service {
         super.onDestroy();
         Log.e(TAG,"STOP");
         Process.killProcess(Process.myPid());
-        Toast.makeText(this,"Service Stopped",Toast.LENGTH_LONG).show();
+        Toast.makeText(this,"Service Stopped", Toast.LENGTH_LONG).show();
     }
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {

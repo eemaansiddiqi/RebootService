@@ -110,8 +110,8 @@ public class ReadWriteFile {
 
 
     public static void serviceActivityLog(Boolean pauseStatus, Context context){
-        String String_pauseStatus=String.valueOf(pauseStatus);
-        String timestamp=("Timestamp:   ")+TimeStamp.formatDate(System.currentTimeMillis())+("   "); //Getting current time stamp
+        String String_pauseStatus= String.valueOf(pauseStatus);
+        String timestamp=("Timestamp:   ") +Utils.formatDate(System.currentTimeMillis())+("   "); //Getting current time stamp
         String paused="     Paused Status:  ";
         File file = new File(Dir, "RestartPausedLog.txt");//Created a Text File to maintain the service activity log
         if(!file.exists()) {
@@ -143,7 +143,7 @@ public class ReadWriteFile {
 
 
     //Logging the Service activity
-    public static void LogToFile(Boolean isStartingUp, String getPowerOnReason, String shutdownCount,String shutdownTime){
+    public static void LogToFile(Boolean isStartingUp, String getPowerOnReason, String shutdownCount, String shutdownTime){
         String fileName = "ServiceActivityLog.txt";
         String symbols = " **************************************************";
         String timestamp = ("Timestamp: ")+Utils.formatDate(System.currentTimeMillis())+("   ");
