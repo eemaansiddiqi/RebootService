@@ -23,11 +23,12 @@ public class ReadWriteFile {
     public static BufferedWriter bufferedWriter = null;
     public static FileWriter fileWriter = null;
 
-    //Write function for Restart Count
-    public static void writeRestartCountToFile(String handlerValue, Context context){
-        File file = new File(Dir, "RestartCount.txt"); //Created a Text File for storing the enabled count
+    public static void writeShutdownCountToFile(String handlerValue, Context context){
+
+        //Store the shutdown count in a file
+        File file = new File(Dir, "ShutdownCount.txt");
         if(!file.exists()) {
-            //If RestartCount.txt is not found, reset the count to 0
+            //If ShutdownCount.txt is not found, reset the count to 0
             handlerValue = "0";
         }
         try {
@@ -40,11 +41,11 @@ public class ReadWriteFile {
         }
     }
 
-    //Read Function for Restart Count
-    public static String readRestartCountFromFile(Context context) {
+
+    public static String readShutdownCount(Context context) {
 
         String ret = "";
-        File file = new File(Dir, "RestartCount.txt"); //Created a Text File for enabled count
+        File file = new File(Dir, "ShutdownCount.txt"); //Created a Text File for enabled count
         if(!file.exists()) { return ret;}
         try {
             FileReader fileReader = new FileReader(file);
@@ -64,11 +65,12 @@ public class ReadWriteFile {
         }
         return ret;
     }
-    //Write function for Shutdown Time
-    public static void writeShutDownTimeToFile(String handlerValue, Context context){
-        File file = new File(Dir, "ShutDownTime.txt"); //Created a Text File for storing the enabled count
+
+
+    public static void writeShutdownTimeToFile(String handlerValue, Context context){
+        File file = new File(Dir, "ShutDownTime.txt");
         if(!file.exists()) {
-            //If ResetCount.txt is not found, reset the count to 0
+            //If ShutdownTime.txt is not found, reset the count to 0
             handlerValue = "0";
         }
         try {
@@ -81,11 +83,11 @@ public class ReadWriteFile {
         }
     }
 
-    //Read Function for Shut Down Time
-    public static String readShutDownTimeFromFile(Context context) {
+
+    public static String readShutdownTimeFromFile(Context context) {
 
         String ret = "";
-        File file = new File(Dir, "ShutDownTime.txt"); //Created a Text File for enabled count
+        File file = new File(Dir, "ShutDownTime.txt");
         if(!file.exists()) { return ret;}
         try {
             FileReader fileReader = new FileReader(file);
@@ -105,36 +107,8 @@ public class ReadWriteFile {
         }
         return ret;
     }
-    public static void serviceRestartLog(String restartCountValue, Context context) {
-        String timestamp=("Timestamp:   ")+TimeStamp.formatDate(System.currentTimeMillis())+("   "); //Getting current time stamp
-        String restartCount="     Restart Count:  ";
-        File file = new File(Dir, "ServiceRestartLog.txt");//Created a Text File to maintain the service activity log
-        if(!file.exists()) {
-            Log.d(TAG, "File Doesn't exist");
-        }
-        try {
-            fileWriter = new FileWriter(file.getAbsoluteFile(), true);
-            bufferedWriter = new BufferedWriter(fileWriter);
-            bufferedWriter.write(timestamp);
-            bufferedWriter.write(restartCount);
-            bufferedWriter.write(restartCountValue);
-            bufferedWriter.newLine();
-        }
-        catch (IOException e) {
-            Log.e("Exception", "File write failed: " + e.toString());
-            e.printStackTrace();
-        }
-        finally {
-            try {
-                if (bufferedWriter!=null)
-                    bufferedWriter.close();
-                if (fileWriter!=null)
-                    fileWriter.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
+
+
     public static void serviceActivityLog(Boolean pauseStatus, Context context){
         String String_pauseStatus=String.valueOf(pauseStatus);
         String timestamp=("Timestamp:   ")+TimeStamp.formatDate(System.currentTimeMillis())+("   "); //Getting current time stamp
@@ -166,4 +140,71 @@ public class ReadWriteFile {
             }
         }
     }
+
+
+    //Logging the Service activity
+    public static void LogToFile(Boolean isStartingUp, String getPowerOnReason, String shutdownCount,String shutdownTime){
+        String fileName = "ServiceActivityLog.txt";
+        String symbols = " **************************************************";
+        String timestamp = ("Timestamp: ")+Utils.formatDate(System.currentTimeMillis())+("   ");
+        String startUpMessage = "    The device just powered up!  ";
+        String shutdownMsg = "    The device is shutting down!  ";
+        String previousShutDownCount = "    Last Shutdown Count:  ";
+        String shutdownCntMsg = "    Device Started Count:  ";
+        String powerOnReason = "    Power On Reason:  ";
+        String shutdownTimeMsg = "    Shut Down Time:  ";
+
+        File file = new File(Dir, fileName);
+        if(!file.exists()) {
+            Log.d(TAG, "ServiceActivityLog.txt: File Doesn't exist");
+            try {
+                file.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        try {
+            fileWriter = new FileWriter(file.getAbsoluteFile(), true);
+            bufferedWriter = new BufferedWriter(fileWriter);
+            bufferedWriter.write(timestamp);
+            if(isStartingUp){
+                bufferedWriter.write(startUpMessage);
+                bufferedWriter.write(previousShutDownCount);
+                bufferedWriter.write(shutdownCount);
+                bufferedWriter.write(powerOnReason);
+                bufferedWriter.write(getPowerOnReason);
+                bufferedWriter.newLine();
+                bufferedWriter.write(symbols);
+                bufferedWriter.newLine();
+            }
+            else {
+                bufferedWriter.write(shutdownMsg);
+                bufferedWriter.write(shutdownTimeMsg);
+                bufferedWriter.write(shutdownTime);
+                bufferedWriter.write(shutdownCntMsg);
+                bufferedWriter.write(shutdownCount);
+                bufferedWriter.newLine();
+                bufferedWriter.write(symbols);
+                bufferedWriter.newLine();
+            }
+        }
+
+        catch (IOException e) {
+            Log.e("Exception", "File write failed: " + e.toString());
+            e.printStackTrace();
+        }
+
+        finally {
+            try {
+                if (bufferedWriter!=null)
+                    bufferedWriter.close();
+                if (fileWriter!=null)
+                    fileWriter.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
 }

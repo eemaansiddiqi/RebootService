@@ -11,7 +11,7 @@ import android.content.Intent;
 public class BootCompleteReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
-            //Start the rebooting service
+            //BOOT_COMPLETE Intent Receive
             Intent serviceIntent = new Intent(context, RebootTrackerService.class);
             context.startService(serviceIntent);
         }

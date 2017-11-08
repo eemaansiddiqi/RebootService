@@ -22,13 +22,14 @@ import static java.lang.Thread.sleep;
  */
 
 public class RebootTrackerService extends Service {
+
     Context context;
-    private Handler restartHandler;
-    private int restartCount;
-    private String restartCountValue;
+    private Handler shutDownHandler;
+    private int shutdownCount;
+    private String shutdownCountVal;
     private int shutDownTime;
-    private String shutDownTimeValue;
-    private int minShutDownTime = 30; //Minimum Time to restart the device
+    private String shutdownTimeValue;
+    private int minShutDownTime = 30;
     private int SIXTY_SECONDS = 60000;
 
     @Nullable
@@ -42,74 +43,85 @@ public class RebootTrackerService extends Service {
         Toast.makeText(this, "Service Started", Toast.LENGTH_LONG).show();
 
         context = this;
-        if (restartHandler == null) {
-            restartHandler = new Handler(Looper.myLooper());
-            restartHandler.post(Reboot_Counter);
+
+        if (shutDownHandler == null) {
+            shutDownHandler = new Handler(Looper.myLooper());
+            shutDownHandler.post(ShutdownThread);
         }
 
         //Creating a Directory if it isn't available
         if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {
-            File Root = Environment.getExternalStorageDirectory(); //Creating File Storage
+            File Root = Environment.getExternalStorageDirectory();
             ReadWriteFile.Dir = new File(Root.getAbsolutePath() + "/MicronetService");
             if (!ReadWriteFile.Dir.exists()) {
                 ReadWriteFile.Dir.mkdir();
             }
         }
-        if (ReadWriteFile.readRestartCountFromFile(context) == "") {
+        initializeShutdownCnt(context);
+        initializeShutDownTime(context);
+
+        ReadWriteFile.LogToFile(true, DeviceManager.getPowerOnReason(), ReadWriteFile.readShutdownCount(context), ReadWriteFile.readShutdownTimeFromFile(context) );
+    }
+
+    private void increaseShutDownCount() {
+        shutdownCount++;
+        shutdownCountVal = Integer.toString(shutdownCount);
+        ReadWriteFile.writeShutdownCountToFile(shutdownCountVal, context);
+        ReadWriteFile.LogToFile(false, "", shutdownCountVal, shutdownTimeValue);
+        Log.d(TAG, "Increased Shutdown Count :" + shutdownCountVal);
+    }
+
+    public void initializeShutdownCnt(Context context){
+        if (ReadWriteFile.readShutdownCount(context) == "") {
             //Initializing handler Count to 0 (When the service restarts)
-            restartCount = 0;
-            restartCountValue = Integer.toString(restartCount);
-            ReadWriteFile.writeRestartCountToFile(restartCountValue, context);
+            shutdownCount = 0;
+            shutdownCountVal = Integer.toString(shutdownCount);
+            ReadWriteFile.writeShutdownCountToFile(shutdownCountVal, context);
         } else {
-            restartCountValue = ReadWriteFile.readRestartCountFromFile(context);
-            restartCount = Integer.parseInt(restartCountValue);
+            shutdownCountVal = ReadWriteFile.readShutdownCount(context);
+            shutdownCount = Integer.parseInt(shutdownCountVal);
         }
-        if (ReadWriteFile.readShutDownTimeFromFile(context) == "") {
+    }
+
+    public void initializeShutDownTime(Context context){
+        if (ReadWriteFile.readShutdownTimeFromFile(context) == "") {
             //Initializing handler Count to 0 (When the service restarts)
             shutDownTime = 0;
-            shutDownTimeValue = Integer.toString(restartCount);
-            ReadWriteFile.writeShutDownTimeToFile(shutDownTimeValue, context);
+            shutdownTimeValue = Integer.toString(shutDownTime);
+            ReadWriteFile.writeShutdownTimeToFile(shutdownTimeValue, context);
         } else {
-            shutDownTimeValue = ReadWriteFile.readShutDownTimeFromFile(context);
-            shutDownTime = Integer.parseInt(shutDownTimeValue);
-            if (shutDownTime < minShutDownTime) //Do not allow restart times that wouldn't allow enough time to disable it
-            {
+            shutdownTimeValue = ReadWriteFile.readShutdownTimeFromFile(context);
+            shutDownTime = Integer.parseInt(shutdownTimeValue);
+            //Do not allow restart times that wouldn't allow enough time to disable it
+            if (shutDownTime < minShutDownTime) {
                 shutDownTime = 0;
             }
         }
     }
 
-    private void increaseRestartCount() {
-        restartCount++;
-        restartCountValue = Integer.toString(restartCount);
-        ReadWriteFile.writeRestartCountToFile(restartCountValue, context);
-        Log.d(TAG, "increased Restart Count :" + restartCountValue);
-        ReadWriteFile.serviceRestartLog(restartCountValue, context);
-    }
-
-    final Runnable Reboot_Counter = new Runnable() {
+    final Runnable ShutdownThread = new Runnable() {
         @Override
         public void run() {
-            shutDownTimeValue = ReadWriteFile.readShutDownTimeFromFile(context);
-            shutDownTime = Integer.parseInt(shutDownTimeValue);
-            if (shutDownTime < minShutDownTime) //Do not allow restart times that wouldn't allow enough time to disable it
-            {
+            shutdownTimeValue = ReadWriteFile.readShutdownTimeFromFile(context);
+            shutDownTime = Integer.parseInt(shutdownTimeValue);
+            //The interval should be greater than 30s.
+            if (shutDownTime < minShutDownTime){
                 shutDownTime = 0;
             }
             Log.d(TAG, "Shut Down Time: " + shutDownTime);
             try {
-                if (shutDownTime!=0){
-                    Log.d(TAG,"Sleep for " +shutDownTime +" Seconds");
+                if (shutDownTime != 0){
+                    Log.d(TAG,"Sleep for " +shutDownTime +" seconds");
                     sleep(shutDownTime*1000);
-                    increaseRestartCount();
-                    Log.d(TAG, "Shutting down, restartCount = value "+restartCount);
+                    increaseShutDownCount();
+                    Log.d(TAG, "Shutting down, shutdownCount = value "+ shutdownCount);
                     java.lang.Process proc = Runtime.getRuntime().exec(new String[]{"setprop", "sys.powerctl", "shutdown"});
                 }
             }
             catch (Exception e) {
                 Log.d(TAG, "run: bh");
             }
-            restartHandler.postDelayed(this, SIXTY_SECONDS);
+            shutDownHandler.postDelayed(this, SIXTY_SECONDS);
         }
     };
     @Override
@@ -117,7 +129,6 @@ public class RebootTrackerService extends Service {
         super.onDestroy();
         Log.e(TAG,"STOP");
         Process.killProcess(Process.myPid());
-        // restartHandler.removeCallbacks(Reboot_Counter);
         Toast.makeText(this,"Service Stopped",Toast.LENGTH_LONG).show();
     }
     @Override
