@@ -1,8 +1,5 @@
 package micronet.com.rebootservice;
 
-import android.app.ActivityManager;
-import android.content.Context;
-
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -26,16 +23,5 @@ public class Utils {
         public static String formatDate(long time) {
             return formatDate(new Date(time));
         }
-
-    /**
-     * Returns true if the service is running, false otherwise. Useful if launching the app manually.
-     */
-        ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-                return true;
-            }
-        }
-        return false;
-    }
 
     }
