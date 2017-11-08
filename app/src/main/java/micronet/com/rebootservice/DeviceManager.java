@@ -33,12 +33,16 @@ public class DeviceManager {
             devicePowerOnReason = POWER_MGM_DEVICE_ON_IGNITION_TRIGGER;
         }
         if(getBit(powerOnReason, 1) == 1 ){
+            devicePowerOnReason = devicePowerOnReason + ", " + POWER_MGM_DEVICE_ON_WIGGLE_TRIGGER;
         }
         if(getBit(powerOnReason, 2) == 1) {
+            devicePowerOnReason = devicePowerOnReason + ", " + POWER_MGM_DEVICE_ARM_LOCKUP;
         }
         if(getBit(powerOnReason, 3) == 4 ) {
+            devicePowerOnReason = devicePowerOnReason + ", " + POWER_MGM_DEVICE_WATCHDOG_RESET;
         }
         if(getBit(powerOnReason, 4) == 1) {
+            devicePowerOnReason = devicePowerOnReason + ", " + POWER_MGM_DEVICE_SW_RESET_REQ;
         }
         return devicePowerOnReason;
     }
