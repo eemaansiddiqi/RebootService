@@ -13,6 +13,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import java.io.File;
+import java.io.IOException;
 
 import static android.content.ContentValues.TAG;
 import static java.lang.Thread.sleep;
@@ -24,6 +25,7 @@ import static java.lang.Thread.sleep;
 public class RebootTrackerService extends Service {
 
     Context context;
+    String poweOnReason = "";
     private Handler shutDownHandler;
     private int shutdownCount;
     private String shutdownCountVal;
@@ -31,6 +33,9 @@ public class RebootTrackerService extends Service {
     private String shutdownTimeValue;
     private int minShutDownTime = 30;
     private int SIXTY_SECONDS = 60000;
+
+    DeviceManager deviceManager;
+    ReadWriteFile readWriteFile;
 
     @Nullable
     @Override
@@ -57,13 +62,22 @@ public class RebootTrackerService extends Service {
                 ReadWriteFile.Dir.mkdir();
             }
         }
-        initializeShutdownCnt(context);
+        try {
+            initializeShutdownCnt(context);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         initializeShutDownTime(context);
 
-        ReadWriteFile.LogToFile(true, DeviceManager.getPowerOnReason(), ReadWriteFile.readShutdownCount(context), ReadWriteFile.readShutdownTimeFromFile(context) );
+        if(deviceManager == null){
+            deviceManager = new DeviceManager();
+        }
+        poweOnReason = deviceManager.getPowerOnReason();
+        Log.d(TAG, "Reason: " + poweOnReason);
+        ReadWriteFile.LogToFile(true, poweOnReason, ReadWriteFile.readShutdownCount(context), ReadWriteFile.readShutdownTimeFromFile(context));
     }
 
-    private void increaseShutDownCount() {
+    private void increaseShutDownCount() throws IOException {
         shutdownCount++;
         shutdownCountVal = Integer.toString(shutdownCount);
         ReadWriteFile.writeShutdownCountToFile(shutdownCountVal, context);
@@ -71,7 +85,7 @@ public class RebootTrackerService extends Service {
         Log.d(TAG, "Increased Shutdown Count :" + shutdownCountVal);
     }
 
-    public void initializeShutdownCnt(Context context){
+    public void initializeShutdownCnt(Context context) throws IOException {
         if (ReadWriteFile.readShutdownCount(context) == "") {
             //Initializing handler Count to 0 (When the service restarts)
             shutdownCount = 0;

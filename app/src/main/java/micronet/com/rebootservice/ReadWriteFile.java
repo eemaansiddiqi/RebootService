@@ -23,13 +23,14 @@ public class ReadWriteFile {
     public static BufferedWriter bufferedWriter = null;
     public static FileWriter fileWriter = null;
 
-    public static void writeShutdownCountToFile(String handlerValue, Context context){
+    public static void writeShutdownCountToFile(String handlerValue, Context context) throws IOException {
 
         //Store the shutdown count in a file
         File file = new File(Dir, "ShutdownCount.txt");
         if(!file.exists()) {
             //If ShutdownCount.txt is not found, reset the count to 0
             handlerValue = "0";
+            file.createNewFile();
         }
         try {
             FileOutputStream fileOutputStream = new FileOutputStream(file);

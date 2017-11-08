@@ -1,8 +1,6 @@
 package micronet.com.rebootservice;
 
-/**
- * Created by eemaan.siddiqi on 11/7/2017.
- */
+import android.util.Log;
 
 public class DeviceManager {
 
@@ -11,9 +9,10 @@ public class DeviceManager {
     private static final String POWER_MGM_DEVICE_ARM_LOCKUP = "Arm lockup";
     private static final String POWER_MGM_DEVICE_WATCHDOG_RESET = "Watchdog reset";
     private static final String POWER_MGM_DEVICE_SW_RESET_REQ = "Software Reset Request";
+    private static final String TAG = "DeviceManager" ;
 
     private static String devicePowerOnReason = "";
-    private int powerOnReason = 0;
+    private static int powerOnReason = 0;
 
     /**
      * Returns a string that contains the power on reason
@@ -24,11 +23,34 @@ public class DeviceManager {
      *   #define POWER_MGM_DEVICE_WATCHDOG_RESET			(1 << 3)
      *   #define POWER_MGM_DEVICE_SW_RESET_REQ			    (1 << 4)
      */
-    public static String getPowerOnReason(){
+    public String getPowerOnReason() {
 
+        devicePowerOnReason = "";
+        powerOnReason = getDevicePowerOn();
+        Log.d(TAG, "Integer Value rxd = " + powerOnReason);
+
+        if(getBit(powerOnReason, 0) == 1) {
+            devicePowerOnReason = POWER_MGM_DEVICE_ON_IGNITION_TRIGGER;
+        }
+        if(getBit(powerOnReason, 1) == 1 ){
+        }
+        if(getBit(powerOnReason, 2) == 1) {
+        }
+        if(getBit(powerOnReason, 3) == 4 ) {
+        }
+        if(getBit(powerOnReason, 4) == 1) {
+        }
         return devicePowerOnReason;
     }
 
+    int getBit(int n, int k) {
+        return (n >> k) & 1;
+    }
 
+    public native int getDevicePowerOn();
 
+    static {
+        System.loadLibrary("mctl");
+    }
 }
+

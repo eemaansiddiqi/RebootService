@@ -1,5 +1,8 @@
 package micronet.com.rebootservice;
 
+import android.app.ActivityManager;
+import android.content.Context;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -7,6 +10,7 @@ import java.util.Date;
  * Created by eemaan.siddiqi on 12/27/2016.
  */
 public class Utils {
+
         public static String formatDate(Date date) {
             return new SimpleDateFormat("MM/dd/yyyy HH:mm:ss").format(date);
         }
@@ -22,4 +26,16 @@ public class Utils {
         public static String formatDate(long time) {
             return formatDate(new Date(time));
         }
+
+    /**
+     * Returns true if the service is running, false otherwise. Useful if launching the app manually.
+     */
+        ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     }
