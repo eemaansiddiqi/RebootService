@@ -156,6 +156,7 @@ int get_power_on_reason(int * fd, uint8_t *power_on_reason)
 	int ret = 0;
 	uint8_t req[] = { MCTRL_MAPI, MAPI_READ_RQ, MAPI_GET_POWER_ON_REASON };
 	ret = get_command(fd, req, sizeof(req), power_on_reason, sizeof(uint8_t));
+	printf(" get_power_on_reason() returns %d ", ret);
 	return ret;
 }
 

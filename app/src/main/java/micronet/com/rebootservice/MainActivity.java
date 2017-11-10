@@ -12,12 +12,12 @@ import android.widget.TextView;
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
+    private int ret = 0;
     private String time = "";
-    Boolean isServiceRunning = false;
     EditText txtTime;
     TextView txtCurrentTime;
-    TextView txtIsServiceRunning;
     Context context;
+    RebootTrackerService rebootTrackerService;
 
     // Used to load the 'native-lib' library on application startup.
     static {
@@ -28,8 +28,42 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+/*
+        Intent service = new Intent(this, RebootTrackerService.class);
+        startService(service);*/
+    }
+
+    public void onStart() {
+        super.onStart();
+
+        txtTime = (EditText) findViewById(R.id.editTxtTime);
+
+        setActionBarTitle(String.format("Reboot Service v2.0"));
 
         setCurrentShutdownTime();
+
+        findViewById(R.id.btnCurrentTime).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    ret = setCurrentShutdownTime();
+                } catch (Exception e){
+                    Log.d(TAG, "Caught exception");
+                }
+            }
+        });
+
+        findViewById(R.id.btnSetTime).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    time = txtTime.getText().toString();
+                    ReadWriteFile.writeShutdownTimeToFile(time, context);
+                } catch (Exception e){
+                    Log.d(TAG, "Caught exception");
+                }
+            }
+        });
 
         findViewById(R.id.btnStart).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -44,50 +78,46 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent();
-                intent.setAction(ServiceManagerReceiver.ACTION_PAUSE_SERVICE);
+                intent.setAction(ServiceManagerReceiver.ACTION_STOP_SERVICE);
                 sendBroadcast(intent);
             }
-
         });
 
-
-    }
-
-    public void onStart() {
-        super.onStart();
-        txtTime = (EditText) findViewById(R.id.editTxtTime);
-
-        findViewById(R.id.btnSetTime).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.btnInit).setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-                try {
-                    time = txtTime.getText().toString();
-                    ReadWriteFile.writeShutdownTimeToFile(time, context);
-                } catch (Exception e){
-                    Log.d(TAG, "Caught exception");
+            public void onClick(View view) {
+                if(rebootTrackerService == null){
+                    RebootTrackerService rebootTrackerService = new RebootTrackerService();
+                    rebootTrackerService.checkLogFolder();
                 }
             }
         });
 
-        findViewById(R.id.btnCurrentTime).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                try {
-                    setCurrentShutdownTime();
-                } catch (Exception e){
-                    Log.d(TAG, "Caught exception");
-                }
-            }
-        });
+/*
+        Intent service = new Intent(this, RebootTrackerService.class);
+        startService(service);*/
+
+
     }
 
-    public void setCurrentShutdownTime(){
+    public int setCurrentShutdownTime(){
+        int ret = 0;
+        String currentTime = "";
+        if(rebootTrackerService == null){
+            RebootTrackerService rebootTrackerService = new RebootTrackerService();
+            rebootTrackerService.checkLogFolder();
+        }
         txtCurrentTime = (TextView) findViewById(R.id.txtCurrentShutdownTime);
-        String currentTime = ReadWriteFile.readShutdownTimeFromFile(context);
+        currentTime = ReadWriteFile.readShutdownTimeFromFile(context);
         if(currentTime == ""){
             currentTime = "0";
         }
         txtCurrentTime.setText("" + currentTime +" s");
+        return ret;
+    }
+
+    public void setActionBarTitle(String title) {
+        getSupportActionBar().setTitle(title);
     }
 
     /**

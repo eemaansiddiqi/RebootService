@@ -35,7 +35,6 @@ Java_com_micronet_obctestingapp_MControl_jniGetMCUVersion(JNIEnv *env, jclass ty
         jresult = env->NewStringUTF((char *) data);
         return jresult;
     }
-
     return jresult;
 }
 
@@ -135,11 +134,11 @@ Java_com_micronet_obctestingapp_MControl_jniSetPowerOnThresholdCfg(JNIEnv *env, 
 JNICALL jint Java_micronet_com_rebootservice_DeviceManager_getDevicePowerOn(JNIEnv *env, jobject xyz){
 
 
-    uint8_t power_on_reason = -3;
+    int power_on_reason = -3;
     int fd = iosocket_connect();
 
     if(fd != 0) {
-        get_power_on_reason(&fd, &power_on_reason);
+        power_on_reason = get_power_on_reason(&fd, (uint8_t *) &power_on_reason);
         iosocket_disconnect(&fd);
     }
 

@@ -144,10 +144,68 @@ public class ReadWriteFile {
 
 
     //Logging the Service activity
-    public static void LogToFile(Boolean isStartingUp, String getPowerOnReason, String shutdownCount, String shutdownTime){
+    public static void LogCsvToFile(Boolean isStartingUp, String getPowerOnReason, String shutdownCount, String shutdownTime){
+        Boolean fileExists = true;
+        String fileName = "ServiceActivityLog.csv";
+        String header = "Time Stamp, Service Info Message, Shutdown Time(in sec), Previous Shutdown Count, Power On Reason,  Shutdown Count";
+        String startUpMessage = "    The device just powered up!  ";
+        String shutdownMsg = "    The device is shutting down!  ";
+        String columnSep = ",";
+
+        File file = new File(Dir, fileName);
+        if(!file.exists()) {
+            fileExists = false;
+            Log.d(TAG, "ServiceActivityLog.txt: File Doesn't exist");
+            try {
+                file.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        try {
+            fileWriter = new FileWriter(file.getAbsoluteFile(), true);
+            bufferedWriter = new BufferedWriter(fileWriter);
+            if(!fileExists){
+                bufferedWriter.write(header);
+                bufferedWriter.newLine();
+            }
+            bufferedWriter.write(Utils.formatDate(System.currentTimeMillis())+ columnSep);
+            if(isStartingUp){
+                bufferedWriter.write(startUpMessage + columnSep + columnSep);
+                bufferedWriter.write(shutdownCount + columnSep);
+                bufferedWriter.write(getPowerOnReason + columnSep);
+                bufferedWriter.newLine();
+            }
+            else {
+                bufferedWriter.write(shutdownMsg + columnSep);
+                bufferedWriter.write(shutdownTime + columnSep + columnSep);
+                bufferedWriter.write(getPowerOnReason + columnSep);
+                bufferedWriter.write(shutdownCount);
+                bufferedWriter.newLine();
+            }
+        }
+
+        catch (IOException e) {
+            Log.e("Exception", "File write failed: " + e.toString());
+            e.printStackTrace();
+        }
+
+        finally {
+            try {
+                if (bufferedWriter!=null)
+                    bufferedWriter.close();
+                if (fileWriter!=null)
+                    fileWriter.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public static void LogToTextFile(Boolean isStartingUp, String getPowerOnReason, String shutdownCount, String shutdownTime){
         String fileName = "ServiceActivityLog.txt";
-        String symbols = " **************************************************";
-        String timestamp = ("Timestamp: ")+Utils.formatDate(System.currentTimeMillis())+("   ");
+        String timestamp = ("Timestamp: ") + Utils.formatDate(System.currentTimeMillis())+("   ");
         String startUpMessage = "    The device just powered up!  ";
         String shutdownMsg = "    The device is shutting down!  ";
         String previousShutDownCount = "    Last Shutdown Count:  ";
@@ -176,7 +234,6 @@ public class ReadWriteFile {
                 bufferedWriter.write(powerOnReason);
                 bufferedWriter.write(getPowerOnReason);
                 bufferedWriter.newLine();
-                bufferedWriter.write(symbols);
                 bufferedWriter.newLine();
             }
             else {
@@ -186,7 +243,6 @@ public class ReadWriteFile {
                 bufferedWriter.write(shutdownCntMsg);
                 bufferedWriter.write(shutdownCount);
                 bufferedWriter.newLine();
-                bufferedWriter.write(symbols);
                 bufferedWriter.newLine();
             }
         }

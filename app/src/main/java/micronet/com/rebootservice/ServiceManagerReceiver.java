@@ -15,14 +15,14 @@ import static java.lang.Thread.sleep;
 public class ServiceManagerReceiver extends BroadcastReceiver {
 
     public static final String ACTION_START_SERVICE = "micronet.com.rebootservice.START_SERVICE";
-    public static final String ACTION_PAUSE_SERVICE = "micronet.com.rebootservice.PAUSE_SERVICE";
+    public static final String ACTION_STOP_SERVICE = "micronet.com.rebootservice.STOP_SERVICE";
     public volatile static boolean pauseStatus;
 
     @Override
     public void onReceive(Context context, Intent intent) {
 
-        if(intent.getAction().equals(ACTION_PAUSE_SERVICE)) {
-            Log.d(TAG, "ACTION_PAUSE_SERVICE received");
+        if(intent.getAction().equals(ACTION_STOP_SERVICE)) {
+            Log.d(TAG, "ACTION_STOP_SERVICE received");
             //  pause service
             pauseStatus = true;
             try {
@@ -33,7 +33,7 @@ public class ServiceManagerReceiver extends BroadcastReceiver {
             ReadWriteFile.serviceActivityLog(pauseStatus,context);
             Intent service = new Intent(context,RebootTrackerService.class);
             boolean res = context.stopService(service);
-            Log.d(TAG, "Service Stopped by User   status="+res);
+            Log.d(TAG, "Service Stopped by User - status="+res);
 
         }
         else if(intent.getAction().equals(ACTION_START_SERVICE) ) {

@@ -12,22 +12,19 @@
         android:id="@+id/txtShutdownTime"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginStart="22dp"
-        android:layout_marginTop="99dp"
+        android:layout_alignStart="@+id/textView"
+        android:layout_below="@+id/btnCurrentTime"
+        android:layout_marginTop="57dp"
         android:text="Shutdown Time (in s): " />
 
     <Button
         android:id="@+id/btnStart"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignEnd="@+id/txtCurrentTimeSet"
-        android:layout_below="@+id/btnSetTime"
-        android:layout_marginTop="72dp"
-        android:text="Start Service"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:layout_alignEnd="@+id/txtShutdownTime"
+        android:layout_below="@+id/txtShutdownTime"
+        android:layout_marginTop="55dp"
+        android:text="Start Service" />
 
     <Button
         android:id="@+id/btnStop"
@@ -36,9 +33,7 @@
         android:layout_alignBaseline="@+id/btnStart"
         android:layout_alignBottom="@+id/btnStart"
         android:layout_alignStart="@+id/editTxtTime"
-        android:text="Pause Service "
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:text="STOP SERVICE" />
 
     <EditText
         android:id="@+id/editTxtTime"
@@ -46,8 +41,8 @@
         android:layout_height="47dp"
         android:layout_alignBaseline="@+id/txtShutdownTime"
         android:layout_alignBottom="@+id/txtShutdownTime"
-        android:layout_marginStart="20dp"
-        android:layout_toEndOf="@+id/txtCurrentTimeSet"
+        android:layout_marginEnd="13dp"
+        android:layout_toStartOf="@+id/btnCurrentTime"
         android:ems="10"
         android:inputType="number"
         android:textSize="14sp" />
@@ -56,8 +51,9 @@
         android:id="@+id/btnSetTime"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignStart="@+id/btnCurrentTime"
-        android:layout_alignTop="@+id/editTxtTime"
+        android:layout_alignBaseline="@+id/txtShutdownTime"
+        android:layout_alignBottom="@+id/txtShutdownTime"
+        android:layout_alignEnd="@+id/btnCurrentTime"
         android:text="Set Time" />
 
     <TextView
@@ -66,15 +62,15 @@
         android:layout_height="wrap_content"
         android:layout_alignBaseline="@+id/btnCurrentTime"
         android:layout_alignBottom="@+id/btnCurrentTime"
-        android:layout_alignStart="@+id/txtShutdownTime"
+        android:layout_alignStart="@+id/textView"
         android:text="Current Shutdown Time :" />
 
     <TextView
         android:id="@+id/txtCurrentShutdownTime"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/txtCurrentTimeSet"
-        android:layout_alignBottom="@+id/txtCurrentTimeSet"
+        android:layout_alignBaseline="@+id/btnCurrentTime"
+        android:layout_alignBottom="@+id/btnCurrentTime"
         android:layout_alignEnd="@+id/editTxtTime"
         android:text="None" />
 
@@ -82,9 +78,29 @@
         android:id="@+id/btnCurrentTime"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/btnSetTime"
         android:layout_alignParentEnd="true"
-        android:layout_marginEnd="25dp"
+        android:layout_below="@+id/btnInit"
+        android:layout_marginEnd="11dp"
+        android:layout_marginTop="40dp"
         android:text="GET TIME " />
+
+    <Button
+        android:id="@+id/btnInit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignStart="@+id/btnCurrentTime"
+        android:layout_marginTop="48dp"
+        android:text="Check" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/btnInit"
+        android:layout_alignBottom="@+id/btnInit"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="36dp"
+        android:text="Initialize Log Folder" />
 
 </RelativeLayout>

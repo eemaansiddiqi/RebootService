@@ -7,16 +7,16 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
-import android.os.Process;
+import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.widget.Toast;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import static android.content.ContentValues.TAG;
-import static java.lang.Thread.sleep;
 
 /**
  * Created by eemaan.siddiqi on 1/17/2017.
@@ -26,11 +26,14 @@ public class RebootTrackerService extends Service {
 
     Context context;
     String poweOnReason = "";
-    private Handler shutDownHandler;
+    private Handler shutdownServiceHandler;
+    private Handler shutdownDeviceHandler;
     private int shutdownCount;
     private String shutdownCountVal;
     private int shutDownTime;
     private String shutdownTimeValue;
+    private long currentTime   = 0;
+    private long xShutdownTime = 0;
     private int minShutDownTime = 30;
     private int SIXTY_SECONDS = 60000;
 
@@ -49,12 +52,22 @@ public class RebootTrackerService extends Service {
 
         context = this;
 
-        if (shutDownHandler == null) {
-            shutDownHandler = new Handler(Looper.myLooper());
-            shutDownHandler.post(ShutdownThread);
+        if (shutdownServiceHandler == null) {
+            shutdownServiceHandler = new Handler(Looper.myLooper());
+            shutdownServiceHandler.post(ShutdownThread);
         }
 
-        //Creating a Directory if it isn't available
+        checkLogFolder();
+
+        if(deviceManager == null){
+            deviceManager = new DeviceManager();
+        }
+        poweOnReason = deviceManager.getPowerOnReason();
+        Log.d(TAG, "Reason: " + poweOnReason);
+        ReadWriteFile.LogCsvToFile(true, poweOnReason, ReadWriteFile.readShutdownCount(context), ReadWriteFile.readShutdownTimeFromFile(context));
+    }
+
+    public void checkLogFolder(){
         if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {
             File Root = Environment.getExternalStorageDirectory();
             ReadWriteFile.Dir = new File(Root.getAbsolutePath() + "/MicronetService");
@@ -62,26 +75,19 @@ public class RebootTrackerService extends Service {
                 ReadWriteFile.Dir.mkdir();
             }
         }
+        initializeShutDownTime(context);
         try {
             initializeShutdownCnt(context);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        initializeShutDownTime(context);
-
-        if(deviceManager == null){
-            deviceManager = new DeviceManager();
-        }
-        poweOnReason = deviceManager.getPowerOnReason();
-        Log.d(TAG, "Reason: " + poweOnReason);
-        ReadWriteFile.LogToFile(true, poweOnReason, ReadWriteFile.readShutdownCount(context), ReadWriteFile.readShutdownTimeFromFile(context));
     }
 
     private void increaseShutDownCount() throws IOException {
         shutdownCount++;
         shutdownCountVal = Integer.toString(shutdownCount);
         ReadWriteFile.writeShutdownCountToFile(shutdownCountVal, context);
-        ReadWriteFile.LogToFile(false, "", shutdownCountVal, shutdownTimeValue);
+        ReadWriteFile.LogCsvToFile(false, "", shutdownCountVal, shutdownTimeValue);
         Log.d(TAG, "Increased Shutdown Count :" + shutdownCountVal);
     }
 
@@ -96,6 +102,7 @@ public class RebootTrackerService extends Service {
             shutdownCount = Integer.parseInt(shutdownCountVal);
         }
     }
+
 
     public void initializeShutDownTime(Context context){
         if (ReadWriteFile.readShutdownTimeFromFile(context) == "") {
@@ -116,6 +123,7 @@ public class RebootTrackerService extends Service {
     final Runnable ShutdownThread = new Runnable() {
         @Override
         public void run() {
+
             shutdownTimeValue = ReadWriteFile.readShutdownTimeFromFile(context);
             shutDownTime = Integer.parseInt(shutdownTimeValue);
             //The interval should be greater than 30s.
@@ -126,28 +134,49 @@ public class RebootTrackerService extends Service {
             try {
                 if (shutDownTime != 0){
                     Log.d(TAG,"Sleep for " +shutDownTime +" seconds");
-                    sleep(shutDownTime*1000);
+                    xShutdownTime = SystemClock.uptimeMillis() +  TimeUnit.SECONDS.toMillis(shutDownTime);
+                    if (shutdownDeviceHandler == null) {
+                        shutdownDeviceHandler = new Handler(Looper.myLooper());
+                    }
+                    shutdownDeviceHandler.postAtTime(shutdown, xShutdownTime);
+                  /*  sleep(shutDownTime*1000);
                     increaseShutDownCount();
                     Log.d(TAG, "Shutting down, shutdownCount = value "+ shutdownCount);
-                    java.lang.Process proc = Runtime.getRuntime().exec(new String[]{"setprop", "sys.powerctl", "shutdown"});
+                    java.lang.Process proc = Runtime.getRuntime().exec(new String[]{"setprop", "sys.powerctl", "shutdown"});*/
                 }
             }
             catch (Exception e) {
                 Log.d(TAG, "run: bh");
+                e.printStackTrace();
             }
-            shutDownHandler.postDelayed(this, SIXTY_SECONDS);
+            shutdownServiceHandler.postDelayed(this, SIXTY_SECONDS);
         }
     };
+
+    private Runnable shutdown = new Runnable() {
+        @Override
+        public void run() {
+            try {
+                increaseShutDownCount();
+                Log.d(TAG, "Shutting down, shutdownCount = value "+ shutdownCount);
+                java.lang.Process proc = Runtime.getRuntime().exec(new String[]{"setprop", "sys.powerctl", "shutdown"});
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    };
+
     @Override
     public void onDestroy() {
         super.onDestroy();
         Log.e(TAG,"STOP");
-        Process.killProcess(Process.myPid());
+        shutdownServiceHandler.removeCallbacks(ShutdownThread);
+        shutdownDeviceHandler.removeCallbacks(shutdown);
+        //Process.killProcess(Process.myPid());
         Toast.makeText(this,"Service Stopped", Toast.LENGTH_LONG).show();
     }
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         return super.onStartCommand(intent, flags, startId);
     }
-
 }

@@ -3,7 +3,7 @@
     android:sharedUserId="android.uid.system"
     package="micronet.com.rebootservice"
     android:versionCode="2"
-    android:versionName="2.0">
+    android:versionName="2.1">
 
     <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -37,7 +37,7 @@
 
         <receiver android:name=".ServiceManagerReceiver" android:enabled="true">
             <intent-filter>
-                <action android:name="micronet.com.rebootservice.PAUSE_SERVICE"/>
+                <action android:name="micronet.com.rebootservice.STOP_SERVICE"/>
                 <action android:name="micronet.com.rebootservice.START_SERVICE"/>
             </intent-filter>
         </receiver>
