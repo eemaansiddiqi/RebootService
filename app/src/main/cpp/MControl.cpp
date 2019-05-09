@@ -18,10 +18,9 @@ enum LED {
 
 static pthread_mutex_t mutexlock;
 
-JNIEXPORT jstring JNICALL
-Java_com_micronet_obctestingapp_MControl_jniGetMCUVersion(JNIEnv *env, jclass type) {
+JNIEXPORT jstring JNICALL Java_micronet_com_rebootservice_DeviceManager_jniGetMCUVersion(JNIEnv *env, jobject instance) {
     uint8_t data[255];
-    memset(data, 0, sizeof(data)); // for automatically-allocated arrays
+//    memset(data, 0, sizeof(data)); // for automatically-allocated arrays
 
     int result = 0;
     jstring jresult = NULL;
@@ -38,8 +37,7 @@ Java_com_micronet_obctestingapp_MControl_jniGetMCUVersion(JNIEnv *env, jclass ty
     return jresult;
 }
 
-JNIEXPORT jint JNICALL
-Java_com_micronet_obctestingapp_MControl_jniGetFPGAVersion(JNIEnv *env, jclass type) {
+JNIEXPORT jint JNICALL Java_micronet_com_rebootservice_DeviceManager_jniGetFPGAVersion(JNIEnv *env, jobject instance) {
 
     uint32_t fpga_ver = 0;
     int result = 0;
@@ -56,8 +54,7 @@ Java_com_micronet_obctestingapp_MControl_jniGetFPGAVersion(JNIEnv *env, jclass t
 
 }
 
-JNIEXPORT jint JNICALL
-Java_com_micronet_obctestingapp_MControl_jniGetADCorGPIVoltage(JNIEnv *env, jclass type, jint gpi_num) {
+JNIEXPORT jint JNICALL Java_micronet_com_rebootservice_DeviceManager_jniGetADCorGPIVoltage(JNIEnv *env, jclass type, jint gpi_num) {
     uint32_t voltage = 0;
     int result = 0;
 
@@ -72,7 +69,7 @@ Java_com_micronet_obctestingapp_MControl_jniGetADCorGPIVoltage(JNIEnv *env, jcla
 }
 
 JNIEXPORT jintArray JNICALL
-Java_com_micronet_obctestingapp_MControl_jniGetLEDStatus(JNIEnv *env, jobject instance, jint led_num) {
+Java_micronet_com_rebootservice_DeviceManager_jniGetLEDStatus(JNIEnv *env, jobject instance, jint led_num) {
     int size = 4;
     jintArray newArray = env->NewIntArray(size);
 
@@ -80,7 +77,7 @@ Java_com_micronet_obctestingapp_MControl_jniGetLEDStatus(JNIEnv *env, jobject in
 
     int fd = iosocket_connect();
     if (fd != 0) {
-        jint tmp[3];
+        jint tmp[4];
         uint8_t brightness, red, green, blue;
         result = get_led_status(&fd, led_num, &brightness, &red, &green, &blue);
         iosocket_disconnect(&fd);
@@ -96,7 +93,7 @@ Java_com_micronet_obctestingapp_MControl_jniGetLEDStatus(JNIEnv *env, jobject in
 }
 
 JNIEXPORT void JNICALL
-Java_com_micronet_obctestingapp_MControl_jniSetLEDValue(JNIEnv *env, jclass type, jint led, jint brightness, jint rgb) {
+Java_micronet_com_rebootservice_DeviceManager_jniSetLEDValue(JNIEnv *env, jclass type, jint led, jint brightness, jint rgb) {
 
     int result = 0;
 
@@ -118,14 +115,14 @@ Java_com_micronet_obctestingapp_MControl_jniSetLEDValue(JNIEnv *env, jclass type
 }
 
 JNIEXPORT jint JNICALL
-Java_com_micronet_obctestingapp_MControl_jniGetPowerOnThresholdCfg(JNIEnv *env, jobject instance) {
+Java_micronet_com_rebootservice_DeviceManager_jniGetPowerOnThresholdCfg(JNIEnv *env, jobject instance) {
 
     // TODO
 
 }
 
 JNIEXPORT jint JNICALL
-Java_com_micronet_obctestingapp_MControl_jniSetPowerOnThresholdCfg(JNIEnv *env, jobject instance) {
+Java_micronet_com_rebootservice_DeviceManager_jniSetPowerOnThresholdCfg(JNIEnv *env, jobject instance) {
 
     // TODO
 
@@ -145,23 +142,8 @@ JNICALL jint Java_micronet_com_rebootservice_DeviceManager_getDevicePowerOn(JNIE
     return power_on_reason;
 
 }
-JNIEXPORT jint JNICALL
-Java_com_micronet_obctestingapp_MControl_jniSetDevicePowerOff(JNIEnv *env, jobject instance, jint wait_time) {
 
-    int result = 0;
-
-    int fd = iosocket_connect();
-
-    if (fd != 0) {
-        result = set_device_power_off(&fd, wait_time);
-        iosocket_disconnect(&fd);
-
-    }
-    return result;
-}
-
-JNIEXPORT jstring JNICALL
-Java_com_micronet_obctestingapp_MControl_jniGetRTCDateTime(JNIEnv *env, jobject instance) {
+JNIEXPORT jstring JNICALL Java_micronet_com_rebootservice_DeviceManager_jniGetRTCDateTime(JNIEnv *env, jobject instance) {
     char dt_str[RTC_STRING_SIZE] = "2016-03-29 19:09:06.58";
     int result = 0;
     jstring jresult = NULL;
@@ -173,7 +155,6 @@ Java_com_micronet_obctestingapp_MControl_jniGetRTCDateTime(JNIEnv *env, jobject 
         iosocket_disconnect(&fd);
         jresult = env->NewStringUTF(dt_str);
     }
-
     return jresult;
 }
 
@@ -182,8 +163,7 @@ Java_com_micronet_obctestingapp_MControl_jniGetRTCDateTime(JNIEnv *env, jobject 
  * 					  Ex : 2016-03-29 19:09:06.58
  * 	Returns result, 0 is bad
  */
-JNIEXPORT jint JNICALL
-Java_com_micronet_obctestingapp_MControl_jniSetRTCDateTime(JNIEnv *env, jobject instance, jstring time) {
+JNIEXPORT jint JNICALL Java_micronet_com_rebootservice_DeviceManager_jniSetRTCDateTime(JNIEnv *env, jobject instance, jstring time) {
 
     char * dt_str = (char *)env->GetStringUTFChars(time, JNI_FALSE);
 
@@ -198,8 +178,24 @@ Java_com_micronet_obctestingapp_MControl_jniSetRTCDateTime(JNIEnv *env, jobject 
     return result;
 }
 
+
+JNIEXPORT jint JNICALL
+Java_micronet_com_rebootservice_DeviceManager_jniSetDevicePowerOff(JNIEnv *env, jobject instance, jint wait_time) {
+
+    int result = 0;
+
+    int fd = iosocket_connect();
+
+    if (fd != 0) {
+        result = set_device_power_off(&fd, wait_time);
+        iosocket_disconnect(&fd);
+
+    }
+    return result;
+}
+
 JNIEXPORT jintArray JNICALL
-Java_com_micronet_obctestingapp_MControl_jniGetRTCCalReg(JNIEnv *env, jobject instance) {
+Java_micronet_com_rebootservice_DeviceManager_jniGetRTCCalReg(JNIEnv *env, jobject instance) {
     uint8_t rtc_dig_cal, rtc_analog_cal;
     jintArray jarr = env->NewIntArray(2);
     jint *narr = env->GetIntArrayElements(jarr, NULL);
@@ -221,28 +217,28 @@ Java_com_micronet_obctestingapp_MControl_jniGetRTCCalReg(JNIEnv *env, jobject in
 }
 
 JNIEXPORT jint JNICALL
-Java_com_micronet_obctestingapp_MControl_jniSetRTCCalReg(JNIEnv *env, jobject instance) {
+Java_micronet_com_rebootservice_DeviceManager_jniSetRTCCalReg(JNIEnv *env, jobject instance) {
 
     // TODO
 
 }
 
 JNIEXPORT jint JNICALL
-Java_com_micronet_obctestingapp_MControl_jniGetRTCRegDBG(JNIEnv *env, jobject instance) {
+Java_micronet_com_rebootservice_DeviceManager_jniGetRTCRegDBG(JNIEnv *env, jobject instance) {
 
     // TODO
 
 }
 
 JNIEXPORT jint JNICALL
-Java_com_micronet_obctestingapp_MControl_jniSetRTCRegDBG(JNIEnv *env, jobject instance) {
+Java_micronet_com_rebootservice_DeviceManager_jniSetRTCRegDBG(JNIEnv *env, jobject instance) {
 
     // TODO
 
 }
 
 JNIEXPORT jint JNICALL
-Java_com_micronet_obctestingapp_MControl_jniSetGPIOStateDBG(JNIEnv *env, jobject instance, jint jgpio_num, jint jgpio_value) {
+Java_micronet_com_rebootservice_DeviceManager_jniSetGPIOStateDBG(JNIEnv *env, jobject instance, jint jgpio_num, jint jgpio_value) {
 
     int result = 0;
     int fd = iosocket_connect();
@@ -262,7 +258,7 @@ Java_com_micronet_obctestingapp_MControl_jniSetGPIOStateDBG(JNIEnv *env, jobject
  * returns true if RTC battery is good.
  */
 JNIEXPORT jboolean JNICALL
-Java_com_micronet_obctestingapp_MControl_jniCheckRTCBattery(JNIEnv *env, jobject instance) {
+Java_micronet_com_rebootservice_DeviceManager_jniCheckRTCBattery(JNIEnv *env, jobject instance) {
     int result = 0;
     int fd = iosocket_connect();
 

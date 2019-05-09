@@ -2,6 +2,8 @@ package micronet.com.rebootservice;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -31,14 +33,18 @@ public class MainActivity extends AppCompatActivity {
 /*
         Intent service = new Intent(this, RebootTrackerService.class);
         startService(service);*/
+        try {
+            PackageInfo packageInfo = getPackageManager().getPackageInfo(getPackageName(),0);
+            String versionName = packageInfo.versionName;
+            setActionBarTitle(String.format("Reboot Service" + versionName));
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     public void onStart() {
         super.onStart();
-
-        txtTime = (EditText) findViewById(R.id.editTxtTime);
-
-        setActionBarTitle(String.format("Reboot Service v2.0"));
+        txtTime = findViewById(R.id.editTxtTime);
 
         setCurrentShutdownTime();
 
@@ -107,7 +113,7 @@ public class MainActivity extends AppCompatActivity {
             RebootTrackerService rebootTrackerService = new RebootTrackerService();
             rebootTrackerService.checkLogFolder();
         }
-        txtCurrentTime = (TextView) findViewById(R.id.txtCurrentShutdownTime);
+        txtCurrentTime = findViewById(R.id.txtCurrentShutdownTime);
         currentTime = ReadWriteFile.readShutdownTimeFromFile(context);
         if(currentTime == ""){
             currentTime = "0";

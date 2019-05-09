@@ -13,6 +13,7 @@ public class DeviceManager {
 
     private static String devicePowerOnReason = "";
     private static int powerOnReason = 0;
+    private static String rtcTime="";
 
     /**
      * Returns a string that contains the power on reason
@@ -56,14 +57,32 @@ public class DeviceManager {
 
     }
 
+    public String getRTCTime(){
+        return jniGetRTCDateTime();
+    }
+
+    public String getMcuVer(){
+        return jniGetMCUVersion();
+    }
+
+    public int getFpgaVer(){
+        return jniGetFPGAVersion();
+    }
+
     int getBit(int n, int k) {
         return (n >> k) & 1;
     }
 
-    public native int getDevicePowerOn();
+    private native int getDevicePowerOn();
+    private native String jniGetRTCDateTime();
+    private native int jniSetRTCDateTime(String time);
+    private native String jniGetMCUVersion();
+    private native int jniGetFPGAVersion();
 
     static {
         System.loadLibrary("mctl");
     }
+
+
 }
 

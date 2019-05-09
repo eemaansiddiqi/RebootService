@@ -26,13 +26,14 @@ public class RebootTrackerService extends Service {
 
     Context context;
     String poweOnReason = "";
+    String rtcTime = "";
+    String currentTime="";
     private Handler shutdownServiceHandler;
     private Handler shutdownDeviceHandler;
     private int shutdownCount;
     private String shutdownCountVal;
     private int shutDownTime;
     private String shutdownTimeValue;
-    private long currentTime   = 0;
     private long xShutdownTime = 0;
     private int minShutDownTime = 30;
     private int SIXTY_SECONDS = 60000;
@@ -71,8 +72,12 @@ public class RebootTrackerService extends Service {
         if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {
             File Root = Environment.getExternalStorageDirectory();
             ReadWriteFile.Dir = new File(Root.getAbsolutePath() + "/MicronetService");
+            ReadWriteFile.appLogDir = new File(ReadWriteFile.Dir + "/SmartX-RebootService");
             if (!ReadWriteFile.Dir.exists()) {
                 ReadWriteFile.Dir.mkdir();
+            }
+            if(!ReadWriteFile.appLogDir.exists()){
+                ReadWriteFile.appLogDir.mkdir();
             }
         }
         initializeShutDownTime(context);
